@@ -52,10 +52,10 @@ class POST:
             await asyncio.sleep(self.delay_between_requests)
             return await resp.text()
         
-    async def async_read(self, urls, data=None, headers=None, **kwargs):
+    async def async_read(self, url, datas=None, **kwargs):
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.request_timeout), **kwargs) as session:
             resp = await asyncio.gather(
-                *[self._async_read(session, url, data=data, headers=headers, **kwargs) for url in urls]
+                *[self._async_read(session, url, data=data, headers=self.headers, **kwargs) for data in datas]
             )
             return resp
     
@@ -65,6 +65,6 @@ class POST:
         time.sleep(self.delay_between_requests)
         return resp.text
     
-    def sync_read(self, urls, data=None, headers=None, **kwargs):
-        resp = [self._sync_read(url, data=data, headers=headers, **kwargs) for url in urls]
+    def sync_read(self, url, datas=None, headers=None, **kwargs):
+        resp = [self._sync_read(url, data=data, headers=headers, **kwargs) for data in datas]
         return resp
