@@ -46,28 +46,25 @@ class POST:
 
         self.headers = headers
 
-    async def _async_read(self, session, url, data=None, headers=None, return_type='Json', **kwargs):
-        assert return_type.lower() == 'string' or return_type.lower() == 'json'
+    async def _async_read(self, session, url, data=None, headers=None, **kwargs):
         async with session.post(url, data=data, headers=headers, **kwargs) as resp:
             assert resp.status == 200
             await asyncio.sleep(self.delay_between_requests)
-            if return_type.lower() == 'string': return resp.text
-            elif return_type.lower() == 'json': return resp.json()
+            return await resp.text()
         
-    async def async_read(self, urls, data=None, headers=None, return_type='Json', **kwargs):
+    async def async_read(self, urls, data=None, headers=None, **kwargs):
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.request_timeout), **kwargs) as session:
             resp = await asyncio.gather(
-                *[self._async_read(session, url, data=data, headers=headers, return_type=return_type**kwargs) for url in urls]
+                *[self._async_read(session, url, data=data, headers=headers, **kwargs) for url in urls]
             )
             return resp
     
-    def _sync_read(self, url, data=None, headers=None, return_type='Json', **kwargs):
-        assert return_type.lower() == 'string' or return_type.lower() == 'json'
+    def _sync_read(self, url, data=None, headers=None, **kwargs):
         resp = requests.post(url, data=data, headers=headers, timeout=self.request_timeout, **kwargs)
         assert resp.status_code == 200
         time.sleep(self.delay_between_requests)
         return resp.text
     
-    def sync_read(self, urls, data=None, headers=None, return_type='Json', **kwargs):
-        resp = [self._sync_read(url, data=data, headers=headers, return_type=return_type, **kwargs) for url in urls]
+    def sync_read(self, urls, data=None, headers=None, **kwargs):
+        resp = [self._sync_read(url, data=data, headers=headers, **kwargs) for url in urls]
         return resp
